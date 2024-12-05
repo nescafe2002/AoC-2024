@@ -1,5 +1,7 @@
 <Query Kind="Statements">
   <Reference Relative="05 input.txt">C:\Drive\Challenges\AoC 2024\05 input.txt</Reference>
+  <NuGetReference>morelinq</NuGetReference>
+  <Namespace>MoreLinq</Namespace>
 </Query>
 
 var input = @"47|53
@@ -51,21 +53,19 @@ foreach (var update in incorrect)
 {
   var lower = 0;
 
+  var seq = Enumerable.Range(0, update.Length).ToDictionary(i => update[i], i => i);
+
   for (var retry = true; retry;)
   {
     retry = false;
-
-    var seq = Enumerable.Range(0, update.Length).ToDictionary(i => update[i], i => i);
 
     foreach (var page in Enumerable.Range(0, update.Length).Skip(lower).SelectMany(left => table[update[left]].Select(x => (left, x))))
     {
       if (seq.TryGetValue(page.x, out var right) && page.left > right)
       {
-        var old = update[right];
-        update[right] = update[page.left];
-        update[page.left] = old;
-        retry = true;
+        (update[page.left], update[right]) = (update[seq[update[page.left]] = right], update[seq[update[right]] = page.left]);
         lower = Math.Min(right, page.left);
+        retry = true;
         break;
       }
     }
