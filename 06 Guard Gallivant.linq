@@ -28,7 +28,7 @@ var route = new HashSet<(int, int)>() { start };
 
 for (var guard = start; ;)
 {
-  var newpos = (guard.x + dirs[dir].x, guard.y + dirs[dir].y);
+  var newpos = (x: guard.x + dirs[dir].x, y: guard.y + dirs[dir].y);
 
   if (obstructions.Contains(newpos))
   {
@@ -36,7 +36,7 @@ for (var guard = start; ;)
     continue;
   }
 
-  if (floor.Contains(newpos))
+  if (newpos.x >= 0 && newpos.y >= 0 && newpos.x < input[0].Length && newpos.y < input.Length)
   {
     route.Add(newpos);
     guard = newpos;
@@ -48,17 +48,15 @@ for (var guard = start; ;)
 
 route.Count.Dump("Answer 1");
 
-var o = 0;
+var loop = 0;
+var path = new HashSet<(int, (int, int))>() { (0, start) };
 
-foreach (var option in floor.Except(new[] { start }).ToList())
+foreach (var option in route.Except(new[] { start }))
 {
   dir = 0;
-  var path = new HashSet<(int, (int, int))>() { (dir, start) };
-  var found = false;
+  path.Clear();
 
-  route = new HashSet<(int, int)>() { start };
-
-  for (var guard = start; !found;)
+  for (var guard = start; ;)
   {
     var newpos = (x: guard.x + dirs[dir].x, y: guard.y + dirs[dir].y);
 
@@ -70,14 +68,12 @@ foreach (var option in floor.Except(new[] { start }).ToList())
 
     if (!path.Add((dir, newpos)))
     {
-      o++;
-      found = true;
+      loop++;
       break;
     }
 
-    if (floor.Contains(newpos))
+    if (newpos.x >= 0 && newpos.y >= 0 && newpos.x < input[0].Length && newpos.y < input.Length)
     {
-      route.Add(newpos);
       guard = newpos;
       continue;
     }
@@ -86,4 +82,4 @@ foreach (var option in floor.Except(new[] { start }).ToList())
   }
 }
 
-o.Dump("Answer 2");
+loop.Dump("Answer 2");
