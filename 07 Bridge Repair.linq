@@ -23,4 +23,4 @@ long Answer(Func<IEnumerable<long>, long, IEnumerable<long>> agg)
 
 Answer((x, y) => x.SelectMany(z => new[] { y > 0 && (z % y) == 0 ? z / y : 0, z - y })).Dump("Answer 1");
 
-Answer((x, y) => x.SelectMany(z => new[] { y > 0 && (z % y) == 0 ? z / y : 0, z - y, long.Parse(z != y && z.ToString().EndsWith(y.ToString()) ? z.ToString()[..((int)Math.Log10(z) - (int)Math.Log10(y))] : "0") })).Dump("Answer 2");
+Answer((x, y) => x.SelectMany(z => new[] { y > 0 && (z % y) == 0 ? z / y : 0, z - y, z % Math.Pow(10, Math.Floor(Math.Log10(y)) + 1) == y ? (long)Math.Floor(z / Math.Pow(10, Math.Floor(Math.Log10(y)) + 1)) : 0 })).Dump("Answer 2");
