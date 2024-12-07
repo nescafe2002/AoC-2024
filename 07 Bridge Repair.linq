@@ -14,13 +14,13 @@ var input = @"190: 10 19
 
 input = File.ReadAllLines("07 input.txt").ToArray();
 
-var lines = input.Select(x => x.Split(": ")).Select(x => (Answer: long.Parse(x[0]), Numbers: x[1].Split(' ').Select(long.Parse).ToArray())).ToArray();
+var lines = input.Select(x => x.Split(": ")).Select(x => (Answer: double.Parse(x[0]), Numbers: x[1].Split(' ').Select(double.Parse).ToArray())).ToArray();
 
-long Answer(Func<IEnumerable<long>, long, IEnumerable<long>> agg)
+double Answer(Func<IEnumerable<double>, double, IEnumerable<double>> agg)
   => lines
-      .Where(line => line.Numbers.Skip(1).Reverse().Aggregate(new[] { line.Answer }.AsEnumerable(), (x, y) => agg(x, y).Where(x => x > 0)).Any(x => x == line.Numbers[0]))
+      .Where(line => line.Numbers.Skip(1).Reverse().Aggregate(new[] { line.Answer }.AsEnumerable(), (x, y) => agg(x, y).Where(x => x > 0 && x % 1 == 0)).Any(x => x == line.Numbers[0]))
       .Sum(x => x.Answer);
 
-Answer((x, y) => x.SelectMany(z => new[] { y > 0 && (z % y) == 0 ? z / y : 0, z - y })).Dump("Answer 1");
+Answer((x, y) => x.SelectMany(z => new[] { z / y, z - y })).Dump("Answer 1");
 
-Answer((x, y) => x.SelectMany(z => new[] { y > 0 && (z % y) == 0 ? z / y : 0, z - y, z % Math.Pow(10, Math.Floor(Math.Log10(y)) + 1) == y ? (long)Math.Floor(z / Math.Pow(10, Math.Floor(Math.Log10(y)) + 1)) : 0 })).Dump("Answer 2");
+Answer((x, y) => x.SelectMany(z => new[] { z / y, z - y, (z - y) / Math.Pow(10, (int)Math.Log10(y) + 1) })).Dump("Answer 2");
