@@ -1,7 +1,5 @@
 <Query Kind="Statements">
   <Reference Relative="07 input.txt">C:\Drive\Challenges\AoC 2024\07 input.txt</Reference>
-  <NuGetReference>morelinq</NuGetReference>
-  <Namespace>MoreLinq</Namespace>
 </Query>
 
 var input = @"190: 10 19
@@ -18,13 +16,11 @@ input = File.ReadAllLines("07 input.txt").ToArray();
 
 var lines = input.Select(x => x.Split(": ")).Select(x => (Answer: long.Parse(x[0]), Numbers: x[1].Split(' ').Select(long.Parse).ToArray())).ToArray();
 
-var seed = new long[] { 0 }.AsEnumerable();
-
 long Answer(Func<IEnumerable<long>, long, IEnumerable<long>> agg)
   => lines
-      .Select(line => line.Numbers.Aggregate(seed, (x, y) => agg(x, y).Where(x => x != 0 && x <= line.Answer).Distinct()).FirstOrDefault(x => x == line.Answer))
-      .Sum();
+      .Where(line => line.Numbers.Skip(1).Reverse().Aggregate(new[] { line.Answer }.AsEnumerable(), (x, y) => agg(x, y).Where(x => x > 0)).Any(x => x == line.Numbers[0]))
+      .Sum(x => x.Answer);
 
-Answer((x, y) => x.SelectMany(i => new[] { i * y, i + y })).Dump("Answer 1");
+Answer((x, y) => x.SelectMany(z => new[] { y > 0 && (z % y) == 0 ? z / y : 0, z - y })).Dump("Answer 1");
 
-Answer((x, y) => x.SelectMany(i => new[] { i * y, i + y, long.Parse($"{i}{y}") })).Dump("Answer 2");
+Answer((x, y) => x.SelectMany(z => new[] { y > 0 && (z % y) == 0 ? z / y : 0, z - y, long.Parse(z != y && z.ToString().EndsWith(y.ToString()) ? z.ToString()[..((int)Math.Log10(z) - (int)Math.Log10(y))] : "0") })).Dump("Answer 2");
