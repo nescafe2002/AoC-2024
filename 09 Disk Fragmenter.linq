@@ -8,53 +8,34 @@ input = File.ReadAllText("09 input.txt").Trim();
 
 var blocks = Enumerable.Range(0, input.Length).SelectMany(i => Enumerable.Repeat(i % 2 == 0 ? (i / 2) : -1, input[i] - '0')).ToArray();
 
-var j = blocks.Length - 1;
+var buffer = blocks.ToArray();
 
-for (var i = 0; i < blocks.Length; i++)
+long Answer(int[] value) => Enumerable.Range(0, value.Length).Zip(value).Where(x => x.Second > 0).Sum(x => x.First * (long)x.Second);
+
+for (var (left, right) = (0, buffer.Length - 1); left < buffer.Length; left++)
 {
-  if (blocks[i] == -1)
+  if (buffer[left] == -1)
   {
-    while (j > 0 && blocks[j] == -1) { j--; }
-    if (j < i) { break; }
-    (blocks[i], blocks[j]) = (blocks[j], blocks[i]);
+    while (right > 0 && buffer[right] == -1) { right--; }
+    if (right < left) { break; }
+    (buffer[left], buffer[right]) = (buffer[right], buffer[left]);
   }
 }
 
-Enumerable.Range(0, blocks.Length).TakeWhile(x => blocks[x] >= 0).Sum(x => x * (long)blocks[x]).Dump("Answer 1");
+Answer(buffer).Dump("Answer 1");
 
-blocks = Enumerable.Range(0, input.Length).SelectMany(i => Enumerable.Repeat(i % 2 == 0 ? (i / 2) : -1, input[i] - '0')).ToArray();
-var slots = Enumerable.Range(0, input.Length).ToLookup(x => x % 2, x => (input[x] - '0', x % 2 == 0 ? x / 2 : -1));
-var used = slots[0];
+var used = Enumerable.Range(0, input.Length).ToLookup(x => x % 2, x => (input[x] - '0', x % 2 == 0 ? x / 2 : -1))[0].ToDictionary(x => x.Item2, x => x.Item1);
+var lookup = Enumerable.Range(0, blocks.Length).ToLookup(x => blocks[x], x => x);
 
-for (var n = blocks.Max(x => x); n > 0; n--)
+foreach (var (left, len1) in from n in Enumerable.Range(0, blocks[blocks.Length - 1] + 1).Reverse() select (lookup[n].First(), used[n]))
 {
-  var pos1 = Enumerable.Range(0, blocks.Length).First(x => blocks[x] == n);
-
-  var len = used.First(x => x.Item2 == n).Item1;
-
+  // Return pos of a free spot (-1) of at least length len1
   var len2 = 0;
-  var pos2 = -1;
-  for (int i = 0; i < blocks.Length; i++)
+  if (Enumerable.Range(0, blocks.Length).Select(x => blocks[x] == -1 ? (++len2 == len1 ? x - len1 + 1 : 0) : (len2 = 0)).First(x => x > 0) is var right && right < left)
   {
-    if (blocks[i] == -1)
-    {
-      len2++;
-      if (len2 == len)
-      {
-        pos2 = i - len + 1;
-        break;
-      }
-    }
-    else len2 = 0;
-  }
-
-  if (pos2 >= 0 && pos2 < pos1)
-  {
-    for (var i = 0; i < len; i++)
-    {
-      (blocks[pos2 + i], blocks[pos1 + i]) = (blocks[pos1 + i], blocks[pos2 + i]);
-    }
+    // Swap len1 blocks
+    Enumerable.Range(0, len1).ToList().ForEach(i => (blocks[right + i], blocks[left + i]) = (blocks[left + i], blocks[right + i]));
   }
 }
 
-Enumerable.Range(0, blocks.Length).Where(x => blocks[x] >= 0).Sum(x => x * (long)blocks[x]).Dump("Answer 2");
+Answer(blocks).Dump("Answer 2");
